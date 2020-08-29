@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-IMAGE_NAME = "ubuntu/xenial64"
-N = 3
-=======
 PROVIDER = "virtualbox"
 BOX_OS = "centos/7"
 NODE_COUNT = 3
@@ -13,7 +9,6 @@ DISK = "disk"
 
 #PROVIDER = ENV['PROVIDER'].to_s.strip.empty? ? 'virtualbox'.freeze : ENV['PROVIDER']
 #BOX_OS = ENV['BOX_OS'].to_s.strip.empty? ? 'ubuntu/xenial64'.freeze : ENV['BOX_OS']
->>>>>>> first commit
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
