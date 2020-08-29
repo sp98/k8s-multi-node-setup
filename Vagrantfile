@@ -3,10 +3,10 @@ IMAGE_NAME = "ubuntu/xenial64"
 N = 3
 =======
 PROVIDER = "virtualbox"
-BOX_OS = "ubuntu/xenial64"
+BOX_OS = "centos/7"
 NODE_COUNT = 3
-DISK_COUNT = 2
-DISK_SIZE_GB = 10   # in GB
+DISK_COUNT = 1
+DISK_SIZE = 10   # in GB
 MASTER_HOST_NAME = "master"
 NODE_HOST_NAME = "worker"
 DISK = "disk"
@@ -50,15 +50,20 @@ Vagrant.configure("2") do |config|
 
             #adding disks
             node.vm.provider "virtualbox" do |provider|
+                if File.exist?(".vagrant/node#{i}-disk-1.vdi")
+                    provider.customize ['storagectl', :id, '--name', 'SATAController', '--remove']
+                end
+                provider.customize ['storagectl', :id, '--name', 'SATAController', '--add', 'sata']
+
                 (1..DISK_COUNT).each do |diskID|
-                    diskPath = "./tmp/node-#{i}-disk-#{diskID}.vdi"
-                    if !File.exists?(diskPath)
-                        provider.customize ['createhd', '--filename', diskPath, '--variant', 'Standard', '--size', DISK_SIZE_GB * 1024]
-                        provider.customize ['storageattach', :id,  '--storagectl', 'IDE', '--port', diskID-1, '--device', 0, '--type', 'hdd', '--medium', diskPath]
+                    if !File.exists?(".vagrant/node#{i}-disk-#{diskID}.vdi")
+                        provider.customize ['createhd', '--filename', ".vagrant/node#{i}-disk-#{diskID}.vdi",  '--variant', 'Standard', '--size', DISK_SIZE * 1024]
                     end
+                        provider.customize ['storageattach', :id,  '--storagectl', 'SATAController', '--port', diskID-1, '--device', 0, '--type', 'hdd', '--medium', ".vagrant/node#{i}-disk-#{diskID}.vdi"]
                 end
             end
 
+            # provision nodes
             node.vm.provision "ansible" do |ansible|
                 ansible.playbook = "node-playbook.yaml"
                 ansible.extra_vars = {
